@@ -37,9 +37,9 @@ def edit_cell(window, key, row, col, justify='left'):
     frame = sg.tk.Frame(root)
     # set anchor point to top-left corner of cell
     anchor_x, anchor_y = table.winfo_x() + x + 5, table.winfo_rooty() + row * height - 115
-    print("table.winfo_y():", table.winfo_y())
-    print("table.bbox(row, col) y value:", y)
-    print("table.winfo_rooty():", table.winfo_rooty())
+    # print("table.winfo_y():", table.winfo_y())
+    # print("table.bbox(row, col) y value:", y)
+    # print("table.winfo_rooty():", table.winfo_rooty())
 
     frame.place(x=anchor_x, y=anchor_y, anchor="nw", width=width, height=height)
     textvariable = sg.tk.StringVar()
