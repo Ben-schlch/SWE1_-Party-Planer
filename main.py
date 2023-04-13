@@ -117,6 +117,59 @@ layout = [[sg.Text('Welcome to the PartyPlaner', font=('Arial', 20), justificati
 window = sg.Window('My Application', layout, size=(1000, 700))
 
 # Event loop
+def load_config_file(filename):
+    if os.path.isfile(filename):
+        with open(filename) as f:
+            data = json.load(f)
+            headings = ['id', 'name', 'startposition']
+            values = [[p['id'], p['name'], str(p['startposition'])] for p in data['Personen']]
+            window['-TABLE-'].update(values=values)
+            window['-DISTANCE-'].update(
+                values=[[p['person1_id'], p['person2_id'], p['wunschabstand']] for p in data['Wunschabstaende']])
+            window['-SETTING-'].update(values=[[key, value] for key, value in data['Spielfeld'].items()])
+    else:
+        sg.popup_error('Please select a file first')
+
+
+def put_into_json():
+    personen = []
+    num_rows = num_rows = len(window['-TABLE-'].widget.get_children())
+    # print("Number of rows :", num_rows)
+    for i in range(1, num_rows + 1):
+        row = list(window['-TABLE-'].widget.item(i, 'values'))
+        print(row)
+        personen.append({
+            'id': row[0],
+            'name': row[1],
+            'startposition': [int(x.strip('[').strip(']')) for x in row[2].split(',')]
+        })
+
+    Wunschabstaende = []
+    num_rows = num_rows = len(window['-DISTANCE-'].widget.get_children())
+    for i in range(1, num_rows + 1):
+        row = list(window['-DISTANCE-'].widget.item(i, 'values'))
+        print(row)
+        Wunschabstaende.append({
+            'person1_id': int(row[0]),
+            'person2_id': int(row[1]),
+            'wunschabstand': float(row[2])
+        })
+
+    Einstellungen = {}
+    num_rows = num_rows = len(window['-SETTING-'].widget.get_children())
+    print("Number of rows :", num_rows)
+    for i in range(1, num_rows + 1):
+        row = list(window['-SETTING-'].widget.item(i, 'values'))
+        print(row)
+        Einstellungen[row[0]] = int(row[1])
+    try:
+        sg.popup(
+            f"JSON file generated successfully!: {json.dumps({'Personen': personen, 'Wunschabstaende': Wunschabstaende, 'Spielfeld': Einstellungen})}",
+            title='Success')
+    except Exception as e:
+        sg.popup_error('Try again! Some obvious error with the config provided: ' + str(e), title='Error')
+
+
 while True:
     event, values = window.read()
     if event == sg.WIN_CLOSED or event == 'Cancel':
@@ -132,18 +185,8 @@ while True:
             window['-FILE-'].update('No file selected')
     elif event == 'Load config file':
         filename = values['Select File']
-        if os.path.isfile(filename):
-            with open(filename) as f:
-                data = json.load(f)
-                headings = ['id', 'name', 'startposition']
-                values = [[p['id'], p['name'], str(p['startposition'])] for p in data['Personen']]
-                window['-TABLE-'].update(values=values)
-                window['-DISTANCE-'].update(
-                    values=[[p['person1_id'], p['person2_id'], p['wunschabstand']] for p in data['Wunschabstaende']])
-                window['-SETTING-'].update(values=[[key, value] for key, value in data['Spielfeld'].items()])
+        load_config_file(filename)
 
-        else:
-            sg.popup_error('Please select a file first')
     elif event[1] == '+CLICKED+':
         cell = row, col = event[2]
         table = event[0]
@@ -154,38 +197,6 @@ while True:
             print(e)
             pass
     elif event == 'Start with this data':
-        personen = []
-        num_rows = num_rows = len(window['-TABLE-'].widget.get_children())
-        # print("Number of rows :", num_rows)
-        for i in range(1, num_rows + 1):
-            row = list(window['-TABLE-'].widget.item(i, 'values'))
-            print(row)
-            personen.append({
-                'id': row[0],
-                'name': row[1],
-                'startposition': [int(x.strip('[').strip(']')) for x in row[2].split(',')]
-            })
-
-        Wunschabstaende = []
-        num_rows = num_rows = len(window['-DISTANCE-'].widget.get_children())
-        for i in range(1, num_rows + 1):
-            row = list(window['-DISTANCE-'].widget.item(i, 'values'))
-            print(row)
-            Wunschabstaende.append({
-                'person1_id': int(row[0]),
-                'person2_id': int(row[1]),
-                'wunschabstand': float(row[2])
-            })
-
-        Einstellungen = {}
-        num_rows = num_rows = len(window['-SETTING-'].widget.get_children())
-        print("Number of rows :", num_rows)
-        for i in range(1, num_rows + 1):
-            row = list(window['-SETTING-'].widget.item(i, 'values'))
-            print(row)
-            Einstellungen[row[0]] = int(row[1])
-
-        sg.popup(f"JSON file generated successfully!: {json.dumps({'Personen': personen, 'Wunschabstaende': Wunschabstaende, 'Spielfeld': Einstellungen})}", title='Success')
-
+        put_into_json()
 # Close the window
 window.close()
