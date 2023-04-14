@@ -37,9 +37,9 @@ def edit_cell(window, key, row, col, justify='left'):
     frame = sg.tk.Frame(root)
     # set anchor point to top-left corner of cell
     anchor_x, anchor_y = table.winfo_x() + x + 5, table.winfo_rooty() + row * height - 115
-    print("table.winfo_y():", table.winfo_y())
-    print("table.bbox(row, col) y value:", y)
-    print("table.winfo_rooty():", table.winfo_rooty())
+    # print("table.winfo_y():", table.winfo_y())
+    # print("table.bbox(row, col) y value:", y)
+    # print("table.winfo_rooty():", table.winfo_rooty())
 
     frame.place(x=anchor_x, y=anchor_y, anchor="nw", width=width, height=height)
     textvariable = sg.tk.StringVar()
@@ -113,8 +113,9 @@ layout = [[sg.Text('Welcome to the PartyPlaner', font=('Arial', 20), justificati
           [sg.Button('Start with this data', font=fontarial)],
           ]
 
-# Create the window
-window = sg.Window('My Application', layout, size=(1000, 700))
+
+
+
 
 # Event loop
 def load_config_file(filename):
@@ -163,40 +164,53 @@ def put_into_json():
         print(row)
         Einstellungen[row[0]] = int(row[1])
     try:
+        jsonify = json.dumps({'Personen': personen, 'Wunschabstaende': Wunschabstaende, 'Spielfeld': Einstellungen})
         sg.popup(
-            f"JSON file generated successfully!: {json.dumps({'Personen': personen, 'Wunschabstaende': Wunschabstaende, 'Spielfeld': Einstellungen})}",
+            f"JSON file generated successfully!: "
+            f"{jsonify}",
             title='Success')
     except Exception as e:
         sg.popup_error('Try again! Some obvious error with the config provided: ' + str(e), title='Error')
 
 
-while True:
-    event, values = window.read()
-    if event == sg.WIN_CLOSED or event == 'Cancel':
-        break
-    elif event == 'Select File':
-        try:
-            filename = values['Select File']
-            if os.path.isfile(filename):
-                window['-FILE-'].update(filename)
-            else:
+def gui_config_loop():
+    global window
+    window = sg.Window('My Application', layout, size=(1000, 700))
+    while True:
+        event, values = window.read()
+        if event == sg.WIN_CLOSED or event == 'Cancel':
+            break
+        elif event == 'Select File':
+            try:
+                filename = values['Select File']
+                if os.path.isfile(filename):
+                    window['-FILE-'].update(filename)
+                else:
+                    window['-FILE-'].update('No file selected')
+            except:
                 window['-FILE-'].update('No file selected')
-        except:
-            window['-FILE-'].update('No file selected')
-    elif event == 'Load config file':
-        filename = values['Select File']
-        load_config_file(filename)
+        elif event == 'Load config file':
+            filename = values['Select File']
+            load_config_file(filename)
 
-    elif event[1] == '+CLICKED+':
-        cell = row, col = event[2]
-        table = event[0]
-        window['-CLICKED-'].update(cell)
-        try:
-            edit_cell(window, table, row + 1, col, justify='center')
-        except Exception as e:
-            print(e)
-            pass
-    elif event == 'Start with this data':
-        put_into_json()
-# Close the window
-window.close()
+        elif event[1] == '+CLICKED+':
+            cell = row, col = event[2]
+            table = event[0]
+            window['-CLICKED-'].update(cell)
+            try:
+                edit_cell(window, table, row + 1, col, justify='center')
+            except Exception as e:
+                print(e)
+                pass
+        elif event == 'Start with this data':
+            json = put_into_json()
+            # send this to import/export
+            #TODO:
+            # return import.json(json)
+
+    # Close the window
+    window.close()
+
+# Create the window
+
+gui_config_loop()
