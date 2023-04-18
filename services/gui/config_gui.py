@@ -1,216 +1,225 @@
-import PySimpleGUI as sg
-import os.path
+import sys
 import json
-
-# Define the theme
-sg.theme('DarkGrey14')
-fontarial = ('Arial', 12)
-edit = False
-
-
-def edit_cell(window, key, row, col, justify='left'):
-    global textvariable, edit
-
-    def callback(event, row, col, text, key):
-        global edit
-        widget = event.widget
-        if key == 'Return':
-            text = widget.get()
-            print(text)
-        widget.destroy()
-        widget.master.destroy()
-        values = list(table.item(row, 'values'))
-        values[col] = text
-        table.item(row, values=values)
-        edit = False
-
-    if edit or row <= 0:
-        return
-
-    edit = True
-    root = window.TKroot
-    table = window[key].Widget
-
-    text = table.item(row, "values")[col]
-    x, y, width, height = table.bbox(row, col)
-
-    frame = sg.tk.Frame(root)
-    # set anchor point to top-left corner of cell
-    anchor_x, anchor_y = table.winfo_x() + x + 5, table.winfo_rooty() + row * height - 115
-    # print("table.winfo_y():", table.winfo_y())
-    # print("table.bbox(row, col) y value:", y)
-    # print("table.winfo_rooty():", table.winfo_rooty())
-
-    frame.place(x=anchor_x, y=anchor_y, anchor="nw", width=width, height=height)
-    textvariable = sg.tk.StringVar()
-    textvariable.set(text)
-    entry = sg.tk.Entry(frame, textvariable=textvariable, justify=justify)
-    entry.pack()
-    entry.select_range(0, sg.tk.END)
-    entry.icursor(sg.tk.END)
-    entry.focus_force()
-    entry.bind("<Return>", lambda e, r=row, c=col, t=text, k='Return': callback(e, r, c, t, k))
-    entry.bind("<Escape>", lambda e, r=row, c=col, t=text, k='Escape': callback(e, r, c, t, k))
-    entry.bind("<FocusOut>", lambda e, r=row, c=col, t=text, k='Escape': callback(e, r, c, t, k))
-
-
-# Define the layout
-# noinspection DuplicatedCode
-layout = [[sg.Text('Welcome to the PartyPlaner', font=('Arial', 20), justification='center', size=(30, 2))],
-          [sg.FileBrowse('Select File', font=fontarial),
-           sg.Text('No file selected', key='-FILE-', font=fontarial)],
-          [sg.Button('Load config file', font=fontarial)],
-          [sg.Text('Party Guests:', font=fontarial)],
-          [sg.Table(values=[], headings=['id', 'name', 'startposition'],
-                    max_col_width=25,
-                    auto_size_columns=True,
-                    # display_row_numbers=True,
-                    justification='center',
-                    num_rows=5,
-                    alternating_row_color='#5f5f5f',
-                    background_color='#7e7e7e',
-                    key='-TABLE-',
-                    expand_x=True,
-                    expand_y=True,
-                    enable_click_events=True,  # Comment out to not enable header and other clicks
-                    font=('Arial', 12))],
-          [sg.Text('Wunschabstaende:', font=fontarial)],
-          [sg.Table(values=[], headings=['person1_id', 'person2_id', 'wunschabstand'],
-
-                    auto_size_columns=True,
-                    # display_row_numbers=True,
-                    justification='cente',
-                    num_rows=5,
-                    alternating_row_color='#5f5f5f',
-                    background_color='#7e7e7e',
-                    key='-DISTANCE-',
-                    # selected_row_colors='red on yellow',
-                    # enable_events=True,
-                    # select_mode=sg.TABLE_SELECT_MODE_BROWSE,
-                    expand_x=True,
-                    expand_y=True,
-                    enable_click_events=True,  # Comment out to not enable header and other clicks
-                    font=('Arial', 12))],
-          [sg.Text('Generell:', font=fontarial)],
-          [sg.Table(values=[], headings=['Einstellung', 'Wert'],
-                    max_col_width=25,
-                    auto_size_columns=True,
-                    # display_row_numbers=True,
-                    justification='center',
-                    num_rows=5,
-                    alternating_row_color='#5f5f5f',
-                    background_color='#7e7e7e',
-                    key='-SETTING-',
-                    # selected_row_colors='red on yellow',
-                    # enable_events=True,
-                    # select_mode=sg.TABLE_SELECT_MODE_BROWSE,
-                    expand_x=True,
-                    expand_y=True,
-                    enable_click_events=True,  # Comment out to not enable header and other clicks
-                    font=('Arial', 12))],
-          [sg.Text('Cell clicked:'), sg.T(k='-CLICKED-')],
-          [sg.HorizontalSeparator(color='black')],
-          [sg.Button('Start with this data', font=fontarial)],
-          ]
+from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidget, QTableWidgetItem, QVBoxLayout, \
+    QWidget, QPushButton, QHBoxLayout, QHeaderView
+from PyQt5.QtCore import *
 
 
 
+# noinspection PyUnresolvedReferences
+class ConfigWindow(QMainWindow):
+    json_ready = pyqtSignal(str)
+    def __init__(self):
+        super().__init__()
+        # Set the window title
+        self.setWindowTitle("JSON Viewer")
+
+        # Set up the main widget and layout
+        self.centralWidget = QWidget()
+        self.layout = QVBoxLayout()
+        self.centralWidget.setLayout(self.layout)
+        self.setCentralWidget(self.centralWidget)
+
+        # Create a file selection button
+        self.fileButton = QPushButton("Select JSON File")
+        self.fileButton.clicked.connect(self.loadJsonFile)
+        self.layout.addWidget(self.fileButton)
+
+        self.jsonbuttons = QHBoxLayout()
+        self.layout.addLayout(self.jsonbuttons)
+
+        # Create a button to load the JSON file
+        self.loadButton = QPushButton("Load JSON File", self)
+        self.loadButton.clicked.connect(self.loadJsonData)
+        self.jsonbuttons.addWidget(self.loadButton)
+
+        self.exportButton = QPushButton("Export Data to JSON File", self)
+        self.exportButton.clicked.connect(self.exportJson)
+        self.jsonbuttons.addWidget(self.exportButton)
+
+        # Create a layout to hold the tables for Personen and Wunschabstaende
+        self.tablesLayout = QHBoxLayout()
+        self.layout.addLayout(self.tablesLayout)
+
+        # Create three tables for the Personen, Wunschabstaende, and Einstellungen
+        # Create the Personen table
+        self.personenTable = QTableWidget()
+        self.personenTable.setColumnCount(4)
+        self.personenTable.setHorizontalHeaderLabels(["ID", "Name", "Startposition x", "Startposition y"])
+        self.personenTable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+        self.tablesLayout.addWidget(self.personenTable)
+
+        # Create the Wunschabstaende table
+        self.wunschabstaendeTable = QTableWidget()
+        self.wunschabstaendeTable.setColumnCount(3)
+        self.wunschabstaendeTable.setHorizontalHeaderLabels(["Person 1 ID", "Person 2 ID", "Wunschabstand"])
+        self.wunschabstaendeTable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.tablesLayout.addWidget(self.wunschabstaendeTable)
+
+        self.addrowLayout = QHBoxLayout()
+        self.layout.addLayout(self.addrowLayout)
+
+        # Create a button to add a row to the Personen table
+        self.addRowPersonenButton = QPushButton("Add Row to Personen Table")
+        self.addRowPersonenButton.clicked.connect(self.addRowPersonen)
+        self.addrowLayout.addWidget(self.addRowPersonenButton)
+
+        # Create a button to add a row to the Wunschabstaende table
+        self.addRowWunschabstaendeButton = QPushButton("Add Row to Wunschabstaende Table")
+        self.addRowWunschabstaendeButton.clicked.connect(self.addRowWunschabstaende)
+        self.addrowLayout.addWidget(self.addRowWunschabstaendeButton)
+
+        self.einstellungenTable = QTableWidget()
+        self.einstellungenTable.setColumnCount(2)
+        self.einstellungenTable.setHorizontalHeaderLabels(["Setting", "Value"])
+        self.einstellungenTable.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+        self.layout.addWidget(self.einstellungenTable)
+
+        self.startSimulationButton = QPushButton("Starte die Simulation")
+        self.startSimulationButton.clicked.connect(self.startSimulation)
+        self.layout.addWidget(self.startSimulationButton)
+
+    def loadJsonFile(self):
+        # Open a file dialog to select a JSON file
+        filename, _ = QFileDialog.getOpenFileName(self, "Select JSON File", "", "JSON Files (*.json)")
+
+        if filename:
+            self.json_filename = filename
+
+    def loadJsonData(self):
+        # Load the JSON data from the file
+        with open(self.json_filename, "r") as file:
+            data = json.load(file)
+
+        # Populate the Personen table
+        self.personenTable.setRowCount(len(data["Personen"]))
+        for i, person in enumerate(data["Personen"]):
+            self.personenTable.setItem(i, 0, QTableWidgetItem(str(person["id"])))
+            self.personenTable.setItem(i, 1, QTableWidgetItem(person["name"]))
+            x_y = person["startposition"]
+            self.personenTable.setItem(i, 2, QTableWidgetItem(str(x_y[0])))
+            self.personenTable.setItem(i, 3, QTableWidgetItem(str(x_y[1])))
+        # Populate the Wunschabstaende table
+        self.wunschabstaendeTable.setRowCount(len(data["Wunschabstaende"]))
+        for i, wunsch in enumerate(data["Wunschabstaende"]):
+            self.wunschabstaendeTable.setItem(i, 0, QTableWidgetItem(str(wunsch["person1_id"])))
+            self.wunschabstaendeTable.setItem(i, 1, QTableWidgetItem(str(wunsch["person2_id"])))
+            self.wunschabstaendeTable.setItem(i, 2, QTableWidgetItem(str(wunsch["wunschabstand"])))
+
+        # Populate the Einstellungen table
+        self.einstellungenTable.setRowCount(len(data["Spielfeld"]) + 1)
+        self.einstellungenTable.setItem(0, 0, QTableWidgetItem("Iterationen"))
+        self.einstellungenTable.setItem(0, 1, QTableWidgetItem(str(data["Spielfeld"]["Iterationen"])))
+        for i, (setting, value) in enumerate(data["Spielfeld"].items()):
+            self.einstellungenTable.setItem(i + 1, 0, QTableWidgetItem(setting))
+            self.einstellungenTable.setItem(i + 1, 1, QTableWidgetItem(str(value)))
+
+    def exportJson(self):
+        # Create a dictionary to store the config data
+        config = self.createjson()
+
+        # Write the config dictionary to a file
+        filename, _ = QFileDialog.getSaveFileName(self, "Save JSON File", "", "JSON Files (*.json)")
+        if filename:
+            with open(filename, "w") as file:
+                json.dump(config, file, indent=4)
+
+    def createjson(self):
+        config = {}
+
+        # Add the Personen table data to the config dictionary
+        personen_data = []
+        for row in range(self.personenTable.rowCount()):
+            id_item = self.personenTable.item(row, 0)
+            name_item = self.personenTable.item(row, 1)
+            x_item = self.personenTable.item(row, 2)
+            y_item = self.personenTable.item(row, 3)
+            if id_item is not None and name_item is not None and x_item is not None and y_item is not None:
+                person = {
+                    "id": id_item.text(),
+                    "name": name_item.text(),
+                    "startposition": [x_item.text(), y_item.text()]
+                }
+                personen_data.append(person)
+        config["Personen"] = personen_data
+
+        # Add the Wunschabstaende table data to the config dictionary
+        wunschabstaende_data = []
+        for row in range(self.wunschabstaendeTable.rowCount()):
+            person1_id_item = self.wunschabstaendeTable.item(row, 0)
+            person2_id_item = self.wunschabstaendeTable.item(row, 1)
+            wunschabstand_item = self.wunschabstaendeTable.item(row, 2)
+            if person1_id_item is not None and person2_id_item is not None and wunschabstand_item is not None:
+                wunschabstand = {
+                    "person1_id": person1_id_item.text(),
+                    "person2_id": person2_id_item.text(),
+                    "wunschabstand": wunschabstand_item.text()
+                }
+                wunschabstaende_data.append(wunschabstand)
+        config["Wunschabstaende"] = wunschabstaende_data
+
+        # Add the Einstellungen table data to the config dictionary
+        spielfeld_data = {}
+        for row in range(self.einstellungenTable.rowCount()):
+            setting_item = self.einstellungenTable.item(row, 0)
+            value_item = self.einstellungenTable.item(row, 1)
+            if setting_item is not None and value_item is not None:
+                spielfeld_data[setting_item.text()] = value_item.text()
+        config["Spielfeld"] = spielfeld_data
+
+        return config
+
+    def addRowToWunschabstaendeTable(self):
+        # Get the current row count of the table
+        rowCount = self.wunschabstaendeTable.rowCount()
+
+        # Add a new row to the table
+        self.wunschabstaendeTable.insertRow(rowCount)
+
+        # Set default values for the new row
+        self.wunschabstaendeTable.setItem(rowCount, 0, QTableWidgetItem(""))
+        self.wunschabstaendeTable.setItem(rowCount, 1, QTableWidgetItem(""))
+        self.wunschabstaendeTable.setItem(rowCount, 2, QTableWidgetItem(""))
+
+    def addRowWunschabstaende(self):
+        # Get the current row count of the table
+        rowCount = self.wunschabstaendeTable.rowCount()
+        # Add a new row to the table
+        self.wunschabstaendeTable.insertRow(rowCount)
+
+        # Set default values for the new row
+        self.wunschabstaendeTable.setItem(rowCount, 0, QTableWidgetItem(""))
+        self.wunschabstaendeTable.setItem(rowCount, 1, QTableWidgetItem(""))
+        self.wunschabstaendeTable.setItem(rowCount, 2, QTableWidgetItem(""))
+
+    def addRowPersonen(self):
+        # Get the current row count and add a new row
+        currentRowCount = self.personenTable.rowCount()
+        self.personenTable.insertRow(currentRowCount)
+
+        # Set default values for the new row
+        self.personenTable.setItem(currentRowCount, 0, QTableWidgetItem(str(currentRowCount + 1)))
+        self.personenTable.setItem(currentRowCount, 1, QTableWidgetItem(""))
+        self.personenTable.setItem(currentRowCount, 2, QTableWidgetItem("0"))
+        self.personenTable.setItem(currentRowCount, 3, QTableWidgetItem("0"))
+
+    def startSimulation(self):
+
+        self.json_ready.emit("json_ready")  # send signal to mainwindow
+        # Raumobjekt:
+        # Raum = import.createraum(json)
+        # return Raum, json
+
+    def get_json(self):
+        jsondata = self.createjson()
+        return jsondata
 
 
-# Event loop
-def load_config_file(filename):
-    if os.path.isfile(filename):
-        with open(filename) as f:
-            data = json.load(f)
-            headings = ['id', 'name', 'startposition']
-            values = [[p['id'], p['name'], str(p['startposition'])] for p in data['Personen']]
-            window['-TABLE-'].update(values=values)
-            window['-DISTANCE-'].update(
-                values=[[p['person1_id'], p['person2_id'], p['wunschabstand']] for p in data['Wunschabstaende']])
-            window['-SETTING-'].update(values=[[key, value] for key, value in data['Spielfeld'].items()])
-    else:
-        sg.popup_error('Please select a file first')
-
-
-def put_into_json():
-    personen = []
-    num_rows = num_rows = len(window['-TABLE-'].widget.get_children())
-    # print("Number of rows :", num_rows)
-    for i in range(1, num_rows + 1):
-        row = list(window['-TABLE-'].widget.item(i, 'values'))
-        print(row)
-        personen.append({
-            'id': row[0],
-            'name': row[1],
-            'startposition': [int(x.strip('[').strip(']')) for x in row[2].split(',')]
-        })
-
-    Wunschabstaende = []
-    num_rows = num_rows = len(window['-DISTANCE-'].widget.get_children())
-    for i in range(1, num_rows + 1):
-        row = list(window['-DISTANCE-'].widget.item(i, 'values'))
-        print(row)
-        Wunschabstaende.append({
-            'person1_id': int(row[0]),
-            'person2_id': int(row[1]),
-            'wunschabstand': float(row[2])
-        })
-
-    Einstellungen = {}
-    num_rows = num_rows = len(window['-SETTING-'].widget.get_children())
-    print("Number of rows :", num_rows)
-    for i in range(1, num_rows + 1):
-        row = list(window['-SETTING-'].widget.item(i, 'values'))
-        print(row)
-        Einstellungen[row[0]] = int(row[1])
-    try:
-        jsonify = json.dumps({'Personen': personen, 'Wunschabstaende': Wunschabstaende, 'Spielfeld': Einstellungen})
-        sg.popup(
-            f"JSON file generated successfully!: "
-            f"{jsonify}",
-            title='Success')
-    except Exception as e:
-        sg.popup_error('Try again! Some obvious error with the config provided: ' + str(e), title='Error')
-
-
-def gui_config_loop():
-    global window
-    window = sg.Window('My Application', layout, size=(1000, 700))
-    while True:
-        event, values = window.read()
-        if event == sg.WIN_CLOSED or event == 'Cancel':
-            break
-        elif event == 'Select File':
-            try:
-                filename = values['Select File']
-                if os.path.isfile(filename):
-                    window['-FILE-'].update(filename)
-                else:
-                    window['-FILE-'].update('No file selected')
-            except:
-                window['-FILE-'].update('No file selected')
-        elif event == 'Load config file':
-            filename = values['Select File']
-            load_config_file(filename)
-
-        elif event[1] == '+CLICKED+':
-            cell = row, col = event[2]
-            table = event[0]
-            window['-CLICKED-'].update(cell)
-            try:
-                edit_cell(window, table, row + 1, col, justify='center')
-            except Exception as e:
-                print(e)
-                pass
-        elif event == 'Start with this data':
-            json = put_into_json()
-            # send this to import/export
-            #TODO:
-            # return import.json(json)
-
-    # Close the window
-    window.close()
-
-# Create the window
-
-gui_config_loop()
+# if __name__ == "__main__":
+#     app = QApplication(sys.argv)
+#     window = ConfigWindow()
+#     window.show()
+#     window = ConfigWindow()
+#     window.show()
+#     sys.exit(app.exec_())
