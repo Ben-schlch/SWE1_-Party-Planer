@@ -5,10 +5,10 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidget
 from PyQt5.QtCore import *
 
 
-
 # noinspection PyUnresolvedReferences
 class ConfigWindow(QMainWindow):
     json_ready = pyqtSignal(str)
+
     def __init__(self):
         super().__init__()
         # Set the window title
@@ -214,7 +214,6 @@ class ConfigWindow(QMainWindow):
     def get_json(self):
         jsondata = self.createjson()
         return jsondata
-
 
 # if __name__ == "__main__":
 #     app = QApplication(sys.argv)

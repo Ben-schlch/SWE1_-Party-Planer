@@ -22,6 +22,7 @@ def main():
 
     simulation_window = SimulationWindow(data)
     simulation_window.show()
+
     # TODO:
     # 1. Create a new window with the room (simulation)
     # 2. create a window with the statistics
