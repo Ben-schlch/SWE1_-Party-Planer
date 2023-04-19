@@ -6,8 +6,8 @@ from PyQt5.QtGui import QPainter, QColor, QPen, QFont, QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QMainWindow, \
     QSplitter
 
-from services.Import.Datamodel import Raum, Person
-
+from services.Import.Datamodel import Raum, Statistik, Person
+from services.gui.statistik_widget import StatistikWidget
 
 class RoomWidget(QWidget):
 
@@ -15,7 +15,6 @@ class RoomWidget(QWidget):
         super().__init__()
         self.setContentsMargins(5, 5, 5, 5)
         self.raum = raum
-        self.person_colors = {}
 
     def calculate_tile_size(self):
         widget_width = self.width()
@@ -45,11 +44,7 @@ class RoomWidget(QWidget):
 
     def drawPersons(self, qp, tile_size):
         for person in self.raum.personen:
-            if person.id not in self.person_colors:
-                color = QColor(randint(0, 255), randint(0, 255), randint(0, 255))
-                self.person_colors[person.id] = color
-            else:
-                color = self.person_colors[person.id]
+            color = QColor(person.color[0], person.color[1], person.color[2])
             opposite_color = QColor(255 - color.red(), 255 - color.green(), 255 - color.blue())
             qp.setBrush(color)
             qp.setPen(QPen(Qt.white, 2, Qt.SolidLine))
@@ -113,6 +108,8 @@ class SimulationWindow(QMainWindow):
         #put the room_widget in the middle of the left widget
         self.room_widget = RoomWidget(raum)
         left_layout.addWidget(self.room_widget)
+        self.statistik_widget = StatistikWidget(statisitk) # todo: replace with real statistik object you get
+        right_layout.addWidget(self.statistik_widget)
 
 
         # Add a spacer to center the widget
@@ -145,11 +142,23 @@ class SimulationWindow(QMainWindow):
 
         self.resizeEvent = resizeEvent
 
-# personen = [Person(1, "Max", [1.5, 1.5, 1.5], (0, 0), 0), Person(2, "Moritz", [1.5, 1.5, 1.5], (1, 1), 0),
-#             Person(3, "Maximilian", [1.5, 1.5, 1.5], (9, 9), 0)]
+personen = [Person(1, "Max", [1.5, 1.5, 1.5], (0, 0), 0), Person(2, "Moritz", [1.5, 1.5, 1.5], (1, 1), 0),
+            Person(3, "Maximilian", [1.5, 1.5, 1.5], (9, 9), 0)]
 # raum = Raum((10, 10), personen, [(5, 5), (5, 6), (6, 5), (6, 6)])
 #
 # app = QApplication([])
 # window = SimulationWindow(raum)
 # window.show()
 # app.exec_()
+
+statisitk = Statistik(personen)
+statisitk.save_panicfaktor(1, 1)
+statisitk.save_panicfaktor(2, 2)
+statisitk.save_panicfaktor(3, 3)
+statisitk.save_panicfaktor(1, 4)
+statisitk.save_panicfaktor(2, 5)
+statisitk.save_panicfaktor(3, 6)
+statisitk.save_panicfaktor(1, 7)
+statisitk.save_panicfaktor(2, 2)
+statisitk.save_panicfaktor(3, 3)
+statisitk.save_panicfaktor(1, 4)
