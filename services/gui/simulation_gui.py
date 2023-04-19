@@ -1,15 +1,17 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QHBoxLayout, QVBoxLayout, QMainWindow, \
-    QSizePolicy, QSplitter, QFrame, QSpacerItem
-from PyQt5.QtGui import QPainter, QColor, QPen, QFont, QIcon
-from PyQt5.QtCore import Qt, QSize
-from typing import List, Tuple
-from random import randint
 from math import floor
+from random import randint
+
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QPainter, QColor, QPen, QFont, QIcon
+from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QMainWindow, \
+    QSplitter
+
+from services.Import.Datamodel import Raum, Person
 
 
 class RoomWidget(QWidget):
 
-    def __init__(self, raum):
+    def __init__(self, raum: Raum):
         super().__init__()
         self.setContentsMargins(5, 5, 5, 5)
         self.raum = raum
@@ -143,29 +145,11 @@ class SimulationWindow(QMainWindow):
 
         self.resizeEvent = resizeEvent
 
-
-class Person:
-    def __init__(self, id_person: int, name: str, wunschabstaende: list[float],  # index of list is id of a person
-                 startposition: tuple[int, int], panikfaktor: float = 0):
-        self.id = id_person
-        self.name = name
-        self.wunschabstaende = wunschabstaende
-        self.position = startposition
-        self.panikfaktor = panikfaktor
-
-
-class Raum:
-    def __init__(self, groesse: tuple[int, int], personen: list[Person], tisch: list[tuple[int, int]]):
-        self.groesse = groesse
-        self.personen = personen
-        self.tisch = tisch
-
-
-personen = [Person(1, "Max", [1.5, 1.5, 1.5], (0, 0), 0), Person(2, "Moritz", [1.5, 1.5, 1.5], (1, 1), 0),
-            Person(3, "Maximilian", [1.5, 1.5, 1.5], (9, 9), 0)]
-raum = Raum((10, 10), personen, [(5, 5), (5, 6), (6, 5), (6, 6)])
-
-app = QApplication([])
-window = SimulationWindow(raum)
-window.show()
-app.exec_()
+# personen = [Person(1, "Max", [1.5, 1.5, 1.5], (0, 0), 0), Person(2, "Moritz", [1.5, 1.5, 1.5], (1, 1), 0),
+#             Person(3, "Maximilian", [1.5, 1.5, 1.5], (9, 9), 0)]
+# raum = Raum((10, 10), personen, [(5, 5), (5, 6), (6, 5), (6, 6)])
+#
+# app = QApplication([])
+# window = SimulationWindow(raum)
+# window.show()
+# app.exec_()

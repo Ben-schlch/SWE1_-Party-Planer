@@ -1,7 +1,7 @@
 import sys
 import json
 from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidget, QTableWidgetItem, QVBoxLayout, \
-    QWidget, QPushButton, QHBoxLayout, QHeaderView
+    QWidget, QPushButton, QHBoxLayout, QHeaderView, QMessageBox
 from PyQt5.QtCore import *
 
 
@@ -89,31 +89,39 @@ class ConfigWindow(QMainWindow):
 
     def loadJsonData(self):
         # Load the JSON data from the file
-        with open(self.json_filename, "r") as file:
-            data = json.load(file)
+        try:
+            with open(self.json_filename, "r") as file:
+                data = json.load(file)
 
-        # Populate the Personen table
-        self.personenTable.setRowCount(len(data["Personen"]))
-        for i, person in enumerate(data["Personen"]):
-            self.personenTable.setItem(i, 0, QTableWidgetItem(str(person["id"])))
-            self.personenTable.setItem(i, 1, QTableWidgetItem(person["name"]))
-            x_y = person["startposition"]
-            self.personenTable.setItem(i, 2, QTableWidgetItem(str(x_y[0])))
-            self.personenTable.setItem(i, 3, QTableWidgetItem(str(x_y[1])))
-        # Populate the Wunschabstaende table
-        self.wunschabstaendeTable.setRowCount(len(data["Wunschabstaende"]))
-        for i, wunsch in enumerate(data["Wunschabstaende"]):
-            self.wunschabstaendeTable.setItem(i, 0, QTableWidgetItem(str(wunsch["person1_id"])))
-            self.wunschabstaendeTable.setItem(i, 1, QTableWidgetItem(str(wunsch["person2_id"])))
-            self.wunschabstaendeTable.setItem(i, 2, QTableWidgetItem(str(wunsch["wunschabstand"])))
+            # Populate the Personen table
+            self.personenTable.setRowCount(len(data["Personen"]))
+            for i, person in enumerate(data["Personen"]):
+                self.personenTable.setItem(i, 0, QTableWidgetItem(str(person["id"])))
+                self.personenTable.setItem(i, 1, QTableWidgetItem(person["name"]))
+                x_y = person["startposition"]
+                self.personenTable.setItem(i, 2, QTableWidgetItem(str(x_y[0])))
+                self.personenTable.setItem(i, 3, QTableWidgetItem(str(x_y[1])))
+            # Populate the Wunschabstaende table
+            self.wunschabstaendeTable.setRowCount(len(data["Wunschabstaende"]))
+            for i, wunsch in enumerate(data["Wunschabstaende"]):
+                self.wunschabstaendeTable.setItem(i, 0, QTableWidgetItem(str(wunsch["person1_id"])))
+                self.wunschabstaendeTable.setItem(i, 1, QTableWidgetItem(str(wunsch["person2_id"])))
+                self.wunschabstaendeTable.setItem(i, 2, QTableWidgetItem(str(wunsch["wunschabstand"])))
 
-        # Populate the Einstellungen table
-        self.einstellungenTable.setRowCount(len(data["Spielfeld"]) + 1)
-        self.einstellungenTable.setItem(0, 0, QTableWidgetItem("Iterationen"))
-        self.einstellungenTable.setItem(0, 1, QTableWidgetItem(str(data["Spielfeld"]["Iterationen"])))
-        for i, (setting, value) in enumerate(data["Spielfeld"].items()):
-            self.einstellungenTable.setItem(i + 1, 0, QTableWidgetItem(setting))
-            self.einstellungenTable.setItem(i + 1, 1, QTableWidgetItem(str(value)))
+            # Populate the Einstellungen table
+            self.einstellungenTable.setRowCount(len(data["Spielfeld"]) + 1)
+            self.einstellungenTable.setItem(0, 0, QTableWidgetItem("Iterationen"))
+            self.einstellungenTable.setItem(0, 1, QTableWidgetItem(str(data["Spielfeld"]["Iterationen"])))
+            for i, (setting, value) in enumerate(data["Spielfeld"].items()):
+                self.einstellungenTable.setItem(i + 1, 0, QTableWidgetItem(setting))
+                self.einstellungenTable.setItem(i + 1, 1, QTableWidgetItem(str(value)))
+        except:
+            print("Error loading JSON file")
+            error_message_box = QMessageBox()
+            error_message_box.setIcon(QMessageBox.Critical)
+            error_message_box.setWindowTitle("Error")
+            error_message_box.setText("An error occurred while loading JSON. Try again!")
+            error_message_box.exec_()
 
     def exportJson(self):
         # Create a dictionary to store the config data
