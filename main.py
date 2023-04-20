@@ -15,34 +15,6 @@ def main():
     stack.addWidget(config_window)
     stack.show()
 
-    # while True:
-    #     # Create a QEventLoop to wait for the signal to be emitted
-    #     loop = QEventLoop()
-    #     config_window.json_ready.connect(loop.quit)
-    #     # Start the event loop and wait for the signal to be emitted
-    #     try:
-    #         loop.exec_()
-    #
-    #         data = config_window.get_json()
-    #         raum = importJson(data)
-    #         # If the importJson call succeeds without raising any errors,
-    #         # break out of the loop and continue with the rest of the program
-    #         break
-    #     except Exception as e:
-    #         # If an error is raised during the importJson call, display the error
-    #         # message and retry the loop
-    #         print(f"Error starting JSON")
-    #         error_message_box = QMessageBox()
-    #         error_message_box.setIcon(QMessageBox.Critical)
-    #         error_message_box.setWindowTitle("Error")
-    #         error_message_box.setText("An error occurred while importing JSON. Try again!")
-    #         error_message_box.exec_()
-    #
-    # simulation_window = SimulationWindow(raum, stack, config_window)
-    # stack.addWidget(simulation_window)
-    #
-    # # Switch to the simulation window
-    # stack.setCurrentWidget(simulation_window)
     sys.exit(app.exec_())
 
 
