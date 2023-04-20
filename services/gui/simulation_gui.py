@@ -1,5 +1,4 @@
 from math import floor
-from random import randint
 
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QPainter, QColor, QPen, QFont, QIcon
@@ -9,12 +8,17 @@ from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QMai
 from services.Import.Datamodel import Raum, Statistik, Person
 from services.gui.statistik_widget import StatistikWidget
 
+
 class RoomWidget(QWidget):
 
     def __init__(self, raum: Raum):
         super().__init__()
         self.setContentsMargins(5, 5, 5, 5)
         self.raum = raum
+
+        #connect to the object and change widget on object changes
+        self.raum.signalRaum.connect(self.updateWidget)
+
 
     def calculate_tile_size(self):
         widget_width = self.width()
@@ -31,7 +35,7 @@ class RoomWidget(QWidget):
         self.drawPersons(qp, tile_size)
 
     def drawGrid(self, qp, tile_size):
-        qp.setPen(QPen(Qt.black, max(tile_size/20, 2), Qt.SolidLine))
+        qp.setPen(QPen(Qt.black, max(tile_size / 20, 2), Qt.SolidLine))
         for i in range(self.raum.groesse[0] + 1):
             qp.drawLine(i * tile_size, 0, round(i * tile_size), round(self.raum.groesse[1] * tile_size))
         for i in range(self.raum.groesse[1] + 1):
@@ -54,25 +58,30 @@ class RoomWidget(QWidget):
             qp.setPen(QPen(opposite_color, 2, Qt.SolidLine))
             qp.drawText(x * tile_size + floor(tile_size / 5),
                         y * tile_size + floor(tile_size / 2) + floor(tile_size / 5),
-                        person.name[0].upper()+str(person.id))
+                        person.name[0].upper() + str(person.id))
 
     def resizeEvent(self, event):
         size = self.size()
         height = size.height()
         width = size.width()
-        if height -10 < width:
+        if height - 10 < width:
             new_size = QSize(height, height)
             self.resize(new_size)
-        elif width -10 < height:
+        elif width - 10 < height:
             new_size = QSize(width, width)
             self.resize(new_size)
+        self.update()
+
+    def updateWidget(self):
         self.update()
 
 
 class SimulationWindow(QMainWindow):
 
-    def __init__(self, raum):
+    def __init__(self, raum, stack, config_window):
         super().__init__()
+        self.stack = stack
+        self.config_window = config_window
         self.centralWidget = QWidget()
         self.layout = QVBoxLayout()
         self.centralWidget.setLayout(self.layout)
@@ -84,31 +93,31 @@ class SimulationWindow(QMainWindow):
         splitter_layout = QVBoxLayout(splitter_widget)
         self.layout.addWidget(splitter_widget)
 
-        splitter = QSplitter(Qt.Horizontal)
+        self.splitter = QSplitter(Qt.Horizontal)
 
         # add left and right to splitter
         left_widget = QWidget()
         left_layout = QVBoxLayout()
         left_widget.setLayout(left_layout)
-        splitter.addWidget(left_widget)
+        self.splitter.addWidget(left_widget)
 
         right_widget = QWidget()
         right_layout = QVBoxLayout()
         right_widget.setLayout(right_layout)
-        splitter.addWidget(right_widget)
+        self.splitter.addWidget(right_widget)
 
         # add frame with vertical line between left and right widgets
-        splitter.setHandleWidth(1)
-        splitter.setStyleSheet("QSplitter::handle {background-color: #000000;}")
-        splitter_layout.addWidget(splitter)
+        self.splitter.setHandleWidth(1)
+        self.splitter.setStyleSheet("QSplitter::handle {background-color: #000000;}")
+        splitter_layout.addWidget(self.splitter)
 
-        splitter.setSizes([self.width() // 2, self.width() // 2])
+        self.splitter.setSizes([self.width() // 2, self.width() // 2])
 
         # Create RoomWidget and add to left side
-        #put the room_widget in the middle of the left widget
+        # put the room_widget in the middle of the left widget
         self.room_widget = RoomWidget(raum)
         left_layout.addWidget(self.room_widget)
-        self.statistik_widget = StatistikWidget(statisitk) # todo: replace with real statistik object you get
+        self.statistik_widget = StatistikWidget(statisitk)  # todo: replace with real statistik object you get
         right_layout.addWidget(self.statistik_widget)
 
 
@@ -118,29 +127,45 @@ class SimulationWindow(QMainWindow):
         self.simulationbuttons = QHBoxLayout()
         left_layout.addLayout(self.simulationbuttons)
         button_heigth = self.height() // 20
-        self.play_button = QPushButton(QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\play.png'), "", self)
+        self.play_button = QPushButton(QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\play.png'), "Play",
+                                       self)
         self.play_button.setMinimumHeight(button_heigth)
         self.simulationbuttons.addWidget(self.play_button)
-        self.pause_button = QPushButton(QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\pause.png'), "", self)
+        self.pause_button = QPushButton(QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\pause.png'),
+                                        "Pause", self)
         self.pause_button.setMinimumHeight(button_heigth)
         self.simulationbuttons.addWidget(self.pause_button)
-        self.iterate_button = QPushButton(QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\iterate.png'), "", self)
+        self.iterate_button = QPushButton(QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\iterate.png'),
+                                          "Iterate", self)
         self.iterate_button.setMinimumHeight(button_heigth)
         self.simulationbuttons.addWidget(self.iterate_button)
-        self.guestiterate_button = QPushButton(QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\guestiterate.png'), "", self)
+        self.guestiterate_button = QPushButton(
+            QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\guestiterate.png'), "Guestiterate", self)
         self.guestiterate_button.setMinimumHeight(button_heigth)
         self.simulationbuttons.addWidget(self.guestiterate_button)
 
+        # Return to config button on right side
+        self.return_to_config = QPushButton("Zurück zur Config", self)
+        self.return_to_config.setMinimumHeight(button_heigth)
+
+        self.return_to_config.clicked.connect(self.show_config_window)
+        right_layout.addWidget(self.return_to_config)
+
+    def show_config_window(self):
+        self.stack.setCurrentWidget(self.config_window)
+
         def resizeEvent(event):
-            splitter.setSizes([self.width() // 2, self.width() // 2])
+            self.splitter.setSizes([self.width() // 2, self.width() // 2])
             self.room_widget.resizeEvent(event)
-            new_button_height = self.height() // 10
+            new_button_height = self.parent().height() // 10
             self.play_button.setMinimumHeight(new_button_height)
             self.pause_button.setMinimumHeight(new_button_height)
             self.iterate_button.setMinimumHeight(new_button_height)
             self.guestiterate_button.setMinimumHeight(new_button_height)
+            self.return_to_config.setMinimumHeight(new_button_height)
 
         self.resizeEvent = resizeEvent
+
 
 personen = [Person(1, "Max", [1.5, 1.5, 1.5], (0, 0), 0), Person(2, "Moritz", [1.5, 1.5, 1.5], (1, 1), 0),
             Person(3, "Maximilian", [1.5, 1.5, 1.5], (9, 9), 0)]

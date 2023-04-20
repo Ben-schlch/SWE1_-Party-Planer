@@ -4,13 +4,17 @@ from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QTableWidget
     QWidget, QPushButton, QHBoxLayout, QHeaderView, QMessageBox
 from PyQt5.QtCore import *
 
+from services.gui.simulation_gui import SimulationWindow
+from services.Import.Import import importJson
 
 # noinspection PyUnresolvedReferences
 class ConfigWindow(QMainWindow):
     json_ready = pyqtSignal(str)
 
-    def __init__(self):
+    def __init__(self, stack):
         super().__init__()
+        self.stack = stack
+
         # Set the window title
         self.setWindowTitle("JSON Viewer")
 
@@ -124,14 +128,22 @@ class ConfigWindow(QMainWindow):
             error_message_box.exec_()
 
     def exportJson(self):
-        # Create a dictionary to store the config data
-        config = self.createjson()
+        try:
+            # Create a dictionary to store the config data
+            config = self.createjson()
 
-        # Write the config dictionary to a file
-        filename, _ = QFileDialog.getSaveFileName(self, "Save JSON File", "", "JSON Files (*.json)")
-        if filename:
-            with open(filename, "w") as file:
-                json.dump(config, file, indent=4)
+            # Write the config dictionary to a file
+            filename, _ = QFileDialog.getSaveFileName(self, "Save JSON File", "", "JSON Files (*.json)")
+            if filename:
+                with open(filename, "w") as file:
+                    json.dump(config, file, indent=4)
+        except:
+            print("Error storing JSON file")
+            error_message_box = QMessageBox()
+            error_message_box.setIcon(QMessageBox.Critical)
+            error_message_box.setWindowTitle("Error")
+            error_message_box.setText("An error occurred while loading JSON. Try again!")
+            error_message_box.exec_()
 
     def createjson(self):
         config = {}
@@ -178,17 +190,6 @@ class ConfigWindow(QMainWindow):
 
         return config
 
-    def addRowToWunschabstaendeTable(self):
-        # Get the current row count of the table
-        rowCount = self.wunschabstaendeTable.rowCount()
-
-        # Add a new row to the table
-        self.wunschabstaendeTable.insertRow(rowCount)
-
-        # Set default values for the new row
-        self.wunschabstaendeTable.setItem(rowCount, 0, QTableWidgetItem(""))
-        self.wunschabstaendeTable.setItem(rowCount, 1, QTableWidgetItem(""))
-        self.wunschabstaendeTable.setItem(rowCount, 2, QTableWidgetItem(""))
 
     def addRowWunschabstaende(self):
         # Get the current row count of the table
@@ -214,10 +215,11 @@ class ConfigWindow(QMainWindow):
 
     def startSimulation(self):
 
-        self.json_ready.emit("json_ready")  # send signal to mainwindow
-        # Raumobjekt:
-        # Raum = import.createraum(json)
-        # return Raum, json
+        data = self.get_json()
+        raum = importJson(data)
+        simulation_window = SimulationWindow(raum, self.stack, self)
+        self.stack.addWidget(simulation_window)
+        self.stack.setCurrentWidget(simulation_window)
 
     def get_json(self):
         jsondata = self.createjson()

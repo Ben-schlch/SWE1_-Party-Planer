@@ -20,11 +20,21 @@ class Person:
         self.panikfaktor = panikfaktor
 
 
-class Raum:
+class Raum(QObject):
+    signalRaum = pyqtSignal()
     def __init__(self, groesse: tuple[int, int], personen: list[Person], tisch: list[tuple[int, int]]):
+        super().__init__()
+
         self.groesse = groesse
         self.personen = personen
         self.tisch = tisch
+
+    def change_position(self, id_person: int, newposition: tuple[int, int]):
+        for person in self.personen:
+            if person.id == id_person:
+                person.position = newposition
+                return
+        self.signalRaum.emit()
 
 
 class Statistik(QObject):
