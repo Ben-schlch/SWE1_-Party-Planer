@@ -32,6 +32,7 @@ class Steuerung:
         position, panikfaktor = self.__get_best_position(person, positions)
         person.save_panicfaktor(panikfaktor)
         person.move_person(position)
+        self.raum.change_position(person.id, position)
 
     def all_guests(self, simulation=False):
         """
@@ -149,8 +150,10 @@ class Steuerung:
         :return: Beste Position, die die Person einnehmen kann und der Panikfaktor.
         """
         panikfaktor = 10.0
-        position = (0, 0)
+        position = person.position
         for pos in positions:
             panikfaktor_temp = self.__calculate_panic_factor(person, pos)
-            panikfaktor, position = panikfaktor_temp, pos if panikfaktor_temp < panikfaktor else panikfaktor
+            if panikfaktor_temp < panikfaktor:
+                panikfaktor = panikfaktor_temp
+                position = pos
         return position, panikfaktor
