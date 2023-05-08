@@ -14,6 +14,7 @@ class Steuerung:
         self.tisch = raum.tisch
         self.current_guest = 0
         self.guest_list_size = len(self.personen)
+        self.statistik = Statistik(self.personen)
 
     def one_guest(self, simulation=False):
         """
@@ -33,6 +34,7 @@ class Steuerung:
         person.save_panicfaktor(panikfaktor)
         person.move_person(position)
         self.raum.change_position(person.id, position)
+        self.statistik.save_panicfaktor(person.id, panikfaktor)
 
     def all_guests(self, simulation=False):
         """
@@ -88,6 +90,7 @@ class Steuerung:
             temp_abstand = self.__calc_distance(position, t)
             abstand = temp_abstand if temp_abstand < abstand else abstand
         panikfaktor += self.__panikfaktor_metrik(abstand, 0)
+        panikfaktor /= self.guest_list_size
         return panikfaktor
 
     @staticmethod

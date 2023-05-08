@@ -1,5 +1,5 @@
 from math import floor
-
+from services.Steuerung.Steuerung import Steuerung
 from PyQt5.QtCore import Qt, QSize
 from PyQt5.QtGui import QPainter, QColor, QPen, QFont, QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QMainWindow, \
@@ -87,6 +87,7 @@ class SimulationWindow(QMainWindow):
         self.centralWidget.setLayout(self.layout)
         self.setCentralWidget(self.centralWidget)
         self.setWindowTitle("Party Simulation:")
+        self.steuerung = Steuerung(raum)
 
         # add a new widget to contain the splitter
         splitter_widget = QWidget(self.centralWidget)
@@ -131,18 +132,22 @@ class SimulationWindow(QMainWindow):
                                        self)
         self.play_button.setMinimumHeight(button_heigth)
         self.simulationbuttons.addWidget(self.play_button)
+        self.play_button.clicked.connect(self.steuerung.start_simulation)
         self.pause_button = QPushButton(QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\pause.png'),
                                         "Pause", self)
         self.pause_button.setMinimumHeight(button_heigth)
         self.simulationbuttons.addWidget(self.pause_button)
+        self.pause_button.clicked.connect(self.steuerung.pause_simulation)
         self.iterate_button = QPushButton(QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\iterate.png'),
                                           "Iterate", self)
         self.iterate_button.setMinimumHeight(button_heigth)
         self.simulationbuttons.addWidget(self.iterate_button)
+        self.iterate_button.clicked.connect(self.steuerung.all_guests)
         self.guestiterate_button = QPushButton(
             QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\guestiterate.png'), "Guestiterate", self)
         self.guestiterate_button.setMinimumHeight(button_heigth)
         self.simulationbuttons.addWidget(self.guestiterate_button)
+        self.guestiterate_button.clicked.connect(self.steuerung.one_guest)
 
         # Return to config button on right side
         self.return_to_config = QPushButton("Zurück zur Config", self)
