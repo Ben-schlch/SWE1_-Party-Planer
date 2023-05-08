@@ -1,6 +1,7 @@
+import time
 from math import floor
 from services.Steuerung.Steuerung import Steuerung
-from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtCore import Qt, QSize, QThread
 from PyQt5.QtGui import QPainter, QColor, QPen, QFont, QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QMainWindow, \
     QSplitter
@@ -16,9 +17,8 @@ class RoomWidget(QWidget):
         self.setContentsMargins(5, 5, 5, 5)
         self.raum = raum
 
-        #connect to the object and change widget on object changes
+        # connect to the object and change widget on object changes
         self.raum.signalRaum.connect(self.updateWidget)
-
 
     def calculate_tile_size(self):
         widget_width = self.width()
@@ -76,6 +76,22 @@ class RoomWidget(QWidget):
         self.update()
 
 
+class SimulationThread(QThread):
+    def __init__(self, steuerung):
+        super().__init__()
+        self.steuerung = steuerung
+        self.pause = False
+
+    def run(self):
+        while not self.pause:
+            self.steuerung.one_guest()
+            time.sleep(0.2)
+        self.pause = False
+
+    def set_pause(self, pause):
+        self.pause = pause
+
+
 class SimulationWindow(QMainWindow):
 
     def __init__(self, raum, stack, config_window):
@@ -122,8 +138,11 @@ class SimulationWindow(QMainWindow):
         self.statistik_widget = StatistikWidget(statisitk)  # todo: replace with real statistik object you get
         right_layout.addWidget(self.statistik_widget)
 
-
         # Add a spacer to center the widget
+
+        # create thread for play pause feautre:
+
+        self.simulation_thread = SimulationThread(self.steuerung)
 
         # Create buttons
         self.simulationbuttons = QHBoxLayout()
@@ -133,12 +152,12 @@ class SimulationWindow(QMainWindow):
                                        self)
         self.play_button.setMinimumHeight(button_heigth)
         self.simulationbuttons.addWidget(self.play_button)
-        self.play_button.clicked.connect(self.play)
+        self.play_button.clicked.connect(self.start_simulation)
         self.pause_button = QPushButton(QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\pause.png'),
                                         "Pause", self)
         self.pause_button.setMinimumHeight(button_heigth)
         self.simulationbuttons.addWidget(self.pause_button)
-        self.pause_button.clicked.connect(self.pause_fun)
+        self.pause_button.clicked.connect(self.pause_simulation)
         self.iterate_button = QPushButton(QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\iterate.png'),
                                           "Iterate", self)
         self.iterate_button.setMinimumHeight(button_heigth)
@@ -157,13 +176,11 @@ class SimulationWindow(QMainWindow):
         self.return_to_config.clicked.connect(self.show_config_window)
         right_layout.addWidget(self.return_to_config)
 
-    def pause_fun(self):
-        self.pause=True
+    def start_simulation(self):
+        self.simulation_thread.start()
 
-    def play(self):
-        while not self.pause:
-            self.steuerung.one_guest()
-        self.pause = False
+    def pause_simulation(self):
+        self.simulation_thread.set_pause(True)
 
     def show_config_window(self):
         self.stack.setCurrentWidget(self.config_window)

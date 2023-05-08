@@ -12,7 +12,7 @@ def importJson(data):
         for l in data['Wunschabstaende']:
             if(l['person1_id'] == p['id']):
                 wunschabstaede[l['person2_id']] = float(l['wunschabstand'])
-                position = (int(p['startposition'][0]), int(p['startposition'][1]))
+        position = (int(p['startposition'][0]), int(p['startposition'][1]))
         tmp = Person(p['id'], p['name'], wunschabstaede, position)
         #print(p['id'], p['name'], wunschabstaede, p['startposition'])
         personlist.append(tmp)

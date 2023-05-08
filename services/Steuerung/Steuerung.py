@@ -84,7 +84,7 @@ class Steuerung:
         for p in self.personen:
             if p == person:
                 continue
-            wunschabstand = person.wunschabstaende[p.id]
+            wunschabstand = person.wunschabstaende.get(p.id)
             abstand = self.__calc_distance(position, p.position)
             panikfaktor += self.__panikfaktor_metrik(abstand, wunschabstand)
         for t in self.tisch:
@@ -105,6 +105,8 @@ class Steuerung:
         """
         obere_schranke = 10
         untere_schranke = 0
+        if not wunschabstand:
+            return 0
         return obere_schranke - ((obere_schranke - untere_schranke) / (1 + (abstand - wunschabstand) ** 2))
 
     @staticmethod

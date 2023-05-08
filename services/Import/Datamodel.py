@@ -4,7 +4,7 @@ from PyQt5.QtCore import pyqtSignal, QObject
 
 
 class Person:
-    def __init__(self, id_person: int, name: str, wunschabstaende: list[float], startposition: tuple[int, int],
+    def __init__(self, id_person: int, name: str, wunschabstaende: dict[any, float], startposition: tuple[int, int],
                  panikfaktor: float = 0):  # wunschabstaende: list[float],
         self.id = id_person
         self.name = name
