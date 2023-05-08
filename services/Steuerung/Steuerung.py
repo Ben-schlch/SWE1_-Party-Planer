@@ -6,7 +6,7 @@ from services.Import.Datamodel import Person, Statistik, Raum
 
 class Steuerung:
 
-    def __init__(self, raum: Raum):
+    def __init__(self, raum: Raum, statistik: Statistik):
         self.states = {"running": 0, "paused": 1, "stopped": 2}
         self.raum = raum
         self.state = self.states["paused"]
@@ -14,7 +14,8 @@ class Steuerung:
         self.tisch = raum.tisch
         self.current_guest = 0
         self.guest_list_size = len(self.personen)
-        self.statistik = Statistik(self.personen)
+        self.statistik = statistik
+        [statistik.save_panicfaktor(p.id, 0.0) for p in self.personen]
 
     def one_guest(self, simulation=False):
         """
@@ -130,6 +131,8 @@ class Steuerung:
             if position == p.position:
                 return True
         if position in self.tisch:
+            return True
+        if position[0] > self.raum.groesse[0] or position[1] > self.raum.groesse[1] or position[0] < 0 or position[1] < 0:
             return True
         return False
 

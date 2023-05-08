@@ -104,7 +104,8 @@ class SimulationWindow(QMainWindow):
         self.centralWidget.setLayout(self.layout)
         self.setCentralWidget(self.centralWidget)
         self.setWindowTitle("Party Simulation:")
-        self.steuerung = Steuerung(raum)
+        self.statistik = Statistik(raum.personen)
+        self.steuerung = Steuerung(raum, self.statistik)
 
         # add a new widget to contain the splitter
         splitter_widget = QWidget(self.centralWidget)
@@ -135,7 +136,7 @@ class SimulationWindow(QMainWindow):
         # put the room_widget in the middle of the left widget
         self.room_widget = RoomWidget(raum)
         left_layout.addWidget(self.room_widget)
-        self.statistik_widget = StatistikWidget(statisitk)  # todo: replace with real statistik object you get
+        self.statistik_widget = StatistikWidget(self.statistik)  # todo: replace with real statistik object you get
         right_layout.addWidget(self.statistik_widget)
 
         # Add a spacer to center the widget

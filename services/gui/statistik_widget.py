@@ -30,11 +30,11 @@ class StatistikWidget(QWidget):
 
         self.avg_line = self.graph.plot(statistik.panik_history_avg, name="Average",
                                         pen=pg.mkPen(QColor(0, 0, 0), width=pen_width * 3))
-
+        self.data = {}
         # Create a line for each person's panik factors
         for person_id, (name, color, panik_history) in self.statistik.statistik.items():
             pen = pg.mkPen(color, width=pen_width)
-            self.graph.plot(panik_history, name=f"{id}  {name}", pen=pen)
+            self.data[person_id] = self.graph.plot(panik_history, name=f"{person_id}  {name}", pen=pen, key=int(person_id))
 
         # Panik value
         self.value_label = QLabel()
@@ -56,11 +56,10 @@ class StatistikWidget(QWidget):
     def update_graph(self):
         # Update average line data
         self.avg_line.setData(self.statistik.panik_history_avg)
-
+        pen_width = round(self.width() / 150)
         # Update person lines data
         for person_id, (name, color, panik_history) in self.statistik.statistik.items():
             self.data[person_id].setData(panik_history)
-
         # Rescale the graph to fit the new data
         self.graph.autoRange()
 
