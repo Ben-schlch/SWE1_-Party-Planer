@@ -1,6 +1,6 @@
 # Autor: Alwin Zomotor
 from time import sleep
-
+from threading import Thread
 from services.Import.Datamodel import Person, Statistik, Raum
 
 
@@ -33,8 +33,9 @@ class Steuerung:
         position, panikfaktor = self.__get_best_position(person, positions)
         person.save_panicfaktor(panikfaktor)
         person.move_person(position)
-        self.raum.change_position(person.id, position)
         self.statistik.save_panicfaktor(person.id, panikfaktor)
+        self.raum.signalRaum.emit()
+        self.statistik.signalPanicfactor.emit()
 
     def all_guests(self, simulation=False):
         """
@@ -117,18 +118,16 @@ class Steuerung:
         # wurzel a quadrat + b quadrat = c quadrat --> Pythagoras
         return ((pos1[0] - pos2[0]) ** 2 + (pos1[1] - pos2[1]) ** 2) ** 0.5
 
-    def __check_collision(self, person: Person) -> bool:
+    def __check_collision(self, position: tuple[int, int]) -> bool:
         """
         Prüft, ob eine Person mit einer anderen Person oder einem Tisch kollidiert.
         :param person: Person, die geprüft werden soll
         :return: True, wenn Kollision vorliegt, sonst False
         """
         for p in self.personen:
-            if p == person:
-                continue
-            if person.position == p.position:
+            if position == p.position:
                 return True
-        if person.position in self.tisch:
+        if position in self.tisch:
             return True
         return False
 
@@ -137,10 +136,10 @@ class Steuerung:
         Gibt alle Positionen zurück, die direkt an einer Person liegen.
         :return: Liste mit allen Positionen, die direkt an einer Person liegen
         """
-        adjacent_positions = []
+        adjacent_positions = [person.position]
         for i in range(-1, 2):
             for j in range(-1, 2):
-                if self.__check_collision(person):
+                if self.__check_collision((person.position[0] + i, person.position[1] + j)):
                     continue
                 adjacent_positions.append((person.position[0] + i, person.position[1] + j))
         return adjacent_positions

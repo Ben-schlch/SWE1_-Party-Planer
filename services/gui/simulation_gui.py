@@ -80,6 +80,7 @@ class SimulationWindow(QMainWindow):
 
     def __init__(self, raum, stack, config_window):
         super().__init__()
+        self.pause = False
         self.stack = stack
         self.config_window = config_window
         self.centralWidget = QWidget()
@@ -132,12 +133,12 @@ class SimulationWindow(QMainWindow):
                                        self)
         self.play_button.setMinimumHeight(button_heigth)
         self.simulationbuttons.addWidget(self.play_button)
-        self.play_button.clicked.connect(self.steuerung.start_simulation)
+        self.play_button.clicked.connect(self.play)
         self.pause_button = QPushButton(QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\pause.png'),
                                         "Pause", self)
         self.pause_button.setMinimumHeight(button_heigth)
         self.simulationbuttons.addWidget(self.pause_button)
-        self.pause_button.clicked.connect(self.steuerung.pause_simulation)
+        self.pause_button.clicked.connect(self.pause_fun)
         self.iterate_button = QPushButton(QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\iterate.png'),
                                           "Iterate", self)
         self.iterate_button.setMinimumHeight(button_heigth)
@@ -155,6 +156,14 @@ class SimulationWindow(QMainWindow):
 
         self.return_to_config.clicked.connect(self.show_config_window)
         right_layout.addWidget(self.return_to_config)
+
+    def pause_fun(self):
+        self.pause=True
+
+    def play(self):
+        while not self.pause:
+            self.steuerung.one_guest()
+        self.pause = False
 
     def show_config_window(self):
         self.stack.setCurrentWidget(self.config_window)
