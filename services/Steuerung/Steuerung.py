@@ -82,6 +82,7 @@ class Steuerung:
         """
         panikfaktor = 0.0
         abstand = 0.0
+        divide_fact = 0
         for p in self.personen:
             if p == person:
                 continue
@@ -91,7 +92,7 @@ class Steuerung:
         for t in self.tisch:
             temp_abstand = self.__calc_distance(position, t)
             abstand = temp_abstand if temp_abstand < abstand else abstand
-        panikfaktor += self.__panikfaktor_metrik(abstand, 0)
+        panikfaktor += self.__panikfaktor_metrik(abstand, person.wunschabstaende.get('0'))
         panikfaktor /= self.guest_list_size
         return panikfaktor
 
@@ -106,8 +107,8 @@ class Steuerung:
         """
         obere_schranke = 10
         untere_schranke = 0
-        if not wunschabstand:
-            return 0
+        if wunschabstand is None:
+            return 0.0
         return obere_schranke - ((obere_schranke - untere_schranke) / (1 + (abstand - wunschabstand) ** 2))
 
     @staticmethod
