@@ -56,6 +56,7 @@ class StatistikWidget(QWidget):
     def update_graph(self):
         # Update average line data
         self.avg_line.setData(self.statistik.panik_history_avg)
+        self.value_label.setText(f"Aktueller Panik average: {self.statistik.panik_history_avg[-1]}")
         pen_width = round(self.width() / 150)
         # Update person lines data
         for person_id, (name, color, panik_history) in self.statistik.statistik.items():

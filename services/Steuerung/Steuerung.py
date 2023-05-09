@@ -82,7 +82,6 @@ class Steuerung:
         """
         panikfaktor = 0.0
         abstand = 0.0
-        divide_fact = 0
         for p in self.personen:
             if p == person:
                 continue
@@ -133,7 +132,7 @@ class Steuerung:
                 return True
         if position in self.tisch:
             return True
-        if position[0] > self.raum.groesse[0] or position[1] > self.raum.groesse[1] or position[0] < 0 or position[1] < 0:
+        if position[0] > self.raum.groesse[0] - 1 or position[1] > self.raum.groesse[1] - 1 or position[0] < 0 or position[1] < 0:
             return True
         return False
 
