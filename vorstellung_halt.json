@@ -1,0 +1,258 @@
+{
+    "Personen": [
+        {
+            "id": "1",
+            "name": "Brigitte",
+            "startposition": [
+                "20",
+                "16"
+            ]
+        },
+        {
+            "id": "2",
+            "name": "Penelope",
+            "startposition": [
+                "4",
+                "1"
+            ]
+        },
+        {
+            "id": "3",
+            "name": "Willi",
+            "startposition": [
+                "1",
+                "2"
+            ]
+        },
+        {
+            "id": "4",
+            "name": "Lea",
+            "startposition": [
+                "15",
+                "10"
+            ]
+        },
+        {
+            "id": "5",
+            "name": "Louis",
+            "startposition": [
+                "13",
+                "12"
+            ]
+        },
+        {
+            "id": "6",
+            "name": "Mick",
+            "startposition": [
+                "10",
+                "10"
+            ]
+        }
+    ],
+    "Wunschabstaende": [
+        {
+            "person1_id": "1",
+            "person2_id": "1",
+            "wunschabstand": "0"
+        },
+        {
+            "person1_id": "1",
+            "person2_id": "2",
+            "wunschabstand": "1.5"
+        },
+        {
+            "person1_id": "1",
+            "person2_id": "3",
+            "wunschabstand": "1.2"
+        },
+        {
+            "person1_id": "1",
+            "person2_id": "0",
+            "wunschabstand": "1.5"
+        },
+        {
+            "person1_id": "2",
+            "person2_id": "1",
+            "wunschabstand": "3.3"
+        },
+        {
+            "person1_id": "2",
+            "person2_id": "2",
+            "wunschabstand": "0"
+        },
+        {
+            "person1_id": "2",
+            "person2_id": "3",
+            "wunschabstand": "4.5"
+        },
+        {
+            "person1_id": "2",
+            "person2_id": "0",
+            "wunschabstand": "3"
+        },
+        {
+            "person1_id": "3",
+            "person2_id": "1",
+            "wunschabstand": "2.4"
+        },
+        {
+            "person1_id": "3",
+            "person2_id": "2",
+            "wunschabstand": "0.1"
+        },
+        {
+            "person1_id": "3",
+            "person2_id": "3",
+            "wunschabstand": "0"
+        },
+        {
+            "person1_id": "3",
+            "person2_id": "0",
+            "wunschabstand": "1.2"
+        },
+        {
+            "person1_id": "4",
+            "person2_id": "0",
+            "wunschabstand": "2"
+        },
+        {
+            "person1_id": "4",
+            "person2_id": "1",
+            "wunschabstand": "3"
+        },
+        {
+            "person1_id": "4",
+            "person2_id": "2",
+            "wunschabstand": "0.3"
+        },
+        {
+            "person1_id": "4",
+            "person2_id": "3",
+            "wunschabstand": "3"
+        },
+        {
+            "person1_id": "4",
+            "person2_id": "5",
+            "wunschabstand": "6"
+        },
+        {
+            "person1_id": "5",
+            "person2_id": "1",
+            "wunschabstand": "1"
+        },
+        {
+            "person1_id": "5",
+            "person2_id": "2",
+            "wunschabstand": "1.2"
+        },
+        {
+            "person1_id": "5",
+            "person2_id": "3",
+            "wunschabstand": "1.1"
+        },
+        {
+            "person1_id": "5",
+            "person2_id": "4",
+            "wunschabstand": "1.2"
+        },
+        {
+            "person1_id": "5",
+            "person2_id": "6",
+            "wunschabstand": "1"
+        },
+        {
+            "person1_id": "4",
+            "person2_id": "6",
+            "wunschabstand": "1"
+        },
+        {
+            "person1_id": "5",
+            "person2_id": "0",
+            "wunschabstand": "1.1"
+        },
+        {
+            "person1_id": "6",
+            "person2_id": "1",
+            "wunschabstand": "4"
+        },
+        {
+            "person1_id": "6",
+            "person2_id": "2",
+            "wunschabstand": "5"
+        },
+        {
+            "person1_id": "6",
+            "person2_id": "3",
+            "wunschabstand": "3"
+        },
+        {
+            "person1_id": "6",
+            "person2_id": "4",
+            "wunschabstand": "1"
+        },
+        {
+            "person1_id": "6",
+            "person2_id": "5",
+            "wunschabstand": "4"
+        },
+        {
+            "person1_id": "1",
+            "person2_id": "4",
+            "wunschabstand": "3"
+        },
+        {
+            "person1_id": "1",
+            "person2_id": "5",
+            "wunschabstand": "2"
+        },
+        {
+            "person1_id": "1",
+            "person2_id": "6",
+            "wunschabstand": "1"
+        },
+        {
+            "person1_id": "2",
+            "person2_id": "4",
+            "wunschabstand": "3"
+        },
+        {
+            "person1_id": "2",
+            "person2_id": "5",
+            "wunschabstand": "4"
+        },
+        {
+            "person1_id": "2",
+            "person2_id": "6",
+            "wunschabstand": "8"
+        },
+        {
+            "person1_id": "3",
+            "person2_id": "4",
+            "wunschabstand": "5"
+        },
+        {
+            "person1_id": "3",
+            "person2_id": "5",
+            "wunschabstand": "2"
+        },
+        {
+            "person1_id": "3",
+            "person2_id": "6",
+            "wunschabstand": "6"
+        },
+        {
+            "person1_id": "6",
+            "person2_id": "0",
+            "wunschabstand": "5"
+        }
+    ],
+    "Spielfeld": {
+        "Iterationen": "150",
+        "raum_breite": "21",
+        "raum_hoehe": "17",
+        "tisch_breite": "10",
+        "tisch_hoehe": "4",
+        "tisch_x": "5",
+        "tisch_y": "6"
+    }
+}

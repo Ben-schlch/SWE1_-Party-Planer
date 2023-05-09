@@ -85,7 +85,7 @@ class SimulationThread(QThread):
     def run(self):
         while not self.pause:
             self.steuerung.one_guest()
-            time.sleep(0.2)
+            time.sleep(0.1)
         self.pause = False
 
     def set_pause(self, pause):
