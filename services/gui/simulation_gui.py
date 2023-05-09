@@ -1,6 +1,7 @@
+import time
 from math import floor
-
-from PyQt5.QtCore import Qt, QSize
+from services.Steuerung.Steuerung import Steuerung
+from PyQt5.QtCore import Qt, QSize, QThread
 from PyQt5.QtGui import QPainter, QColor, QPen, QFont, QIcon
 from PyQt5.QtWidgets import QWidget, QPushButton, QHBoxLayout, QVBoxLayout, QMainWindow, \
     QSplitter
@@ -16,9 +17,8 @@ class RoomWidget(QWidget):
         self.setContentsMargins(5, 5, 5, 5)
         self.raum = raum
 
-        #connect to the object and change widget on object changes
+        # connect to the object and change widget on object changes
         self.raum.signalRaum.connect(self.updateWidget)
-
 
     def calculate_tile_size(self):
         widget_width = self.width()
@@ -76,10 +76,27 @@ class RoomWidget(QWidget):
         self.update()
 
 
+class SimulationThread(QThread):
+    def __init__(self, steuerung):
+        super().__init__()
+        self.steuerung = steuerung
+        self.pause = False
+
+    def run(self):
+        while not self.pause:
+            self.steuerung.one_guest()
+            time.sleep(0.1)
+        self.pause = False
+
+    def set_pause(self, pause):
+        self.pause = pause
+
+
 class SimulationWindow(QMainWindow):
 
     def __init__(self, raum, stack, config_window):
         super().__init__()
+        self.pause = False
         self.stack = stack
         self.config_window = config_window
         self.centralWidget = QWidget()
@@ -87,6 +104,8 @@ class SimulationWindow(QMainWindow):
         self.centralWidget.setLayout(self.layout)
         self.setCentralWidget(self.centralWidget)
         self.setWindowTitle("Party Simulation:")
+        self.statistik = Statistik(raum.personen)
+        self.steuerung = Steuerung(raum, self.statistik)
 
         # add a new widget to contain the splitter
         splitter_widget = QWidget(self.centralWidget)
@@ -117,11 +136,14 @@ class SimulationWindow(QMainWindow):
         # put the room_widget in the middle of the left widget
         self.room_widget = RoomWidget(raum)
         left_layout.addWidget(self.room_widget)
-        self.statistik_widget = StatistikWidget(statisitk)  # todo: replace with real statistik object you get
+        self.statistik_widget = StatistikWidget(self.statistik)  # todo: replace with real statistik object you get
         right_layout.addWidget(self.statistik_widget)
 
-
         # Add a spacer to center the widget
+
+        # create thread for play pause feautre:
+
+        self.simulation_thread = SimulationThread(self.steuerung)
 
         # Create buttons
         self.simulationbuttons = QHBoxLayout()
@@ -131,18 +153,22 @@ class SimulationWindow(QMainWindow):
                                        self)
         self.play_button.setMinimumHeight(button_heigth)
         self.simulationbuttons.addWidget(self.play_button)
+        self.play_button.clicked.connect(self.start_simulation)
         self.pause_button = QPushButton(QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\pause.png'),
                                         "Pause", self)
         self.pause_button.setMinimumHeight(button_heigth)
         self.simulationbuttons.addWidget(self.pause_button)
+        self.pause_button.clicked.connect(self.pause_simulation)
         self.iterate_button = QPushButton(QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\iterate.png'),
                                           "Iterate", self)
         self.iterate_button.setMinimumHeight(button_heigth)
         self.simulationbuttons.addWidget(self.iterate_button)
+        self.iterate_button.clicked.connect(self.steuerung.all_guests)
         self.guestiterate_button = QPushButton(
             QIcon(r'C:\Users\bensc\Projects\swe\SWE1_-Party-Planer\data\guestiterate.png'), "Guestiterate", self)
         self.guestiterate_button.setMinimumHeight(button_heigth)
         self.simulationbuttons.addWidget(self.guestiterate_button)
+        self.guestiterate_button.clicked.connect(self.steuerung.one_guest)
 
         # Return to config button on right side
         self.return_to_config = QPushButton("Zurück zur Config", self)
@@ -150,6 +176,12 @@ class SimulationWindow(QMainWindow):
 
         self.return_to_config.clicked.connect(self.show_config_window)
         right_layout.addWidget(self.return_to_config)
+
+    def start_simulation(self):
+        self.simulation_thread.start()
+
+    def pause_simulation(self):
+        self.simulation_thread.set_pause(True)
 
     def show_config_window(self):
         self.stack.setCurrentWidget(self.config_window)
